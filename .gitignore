@@ -1,0 +1,4 @@
+/.env
+/scripts/dumps
+/scripts/log
+/.idea/

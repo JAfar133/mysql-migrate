@@ -1,0 +1,24 @@
+#!/bin/bash
+ENV_FILE_PATH=../.env
+export $(grep -v '^#' $ENV_FILE_PATH | xargs)
+
+if [ $# -eq 0 ]; then
+    echo "[Error] The database was not pass"
+    exit 1
+fi
+
+database_name=$1
+
+echo "Starting mysqldump for database: $database_name"
+
+mysqldump --databases "${database_name}" --add-drop-database \
+  --single-transaction --column-statistics=0 --source-data=2 \
+  -u root -p"${MASTER_USER_PASSWORD}" --port "${MASTER_PORT}" \
+ | gzip > "dumps/${database_name}_dump.sql.gz" 2>&1 | tee log/error.log
+
+if [ $? -ne 0 ]; then
+    echo "[Error] mysqldump failed. Check error.log for details."
+    exit 1
+fi
+
+echo "[Success] Dump completed successfully"
