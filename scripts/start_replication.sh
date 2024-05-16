@@ -20,7 +20,7 @@ mysql -u root -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} -e \
   RESET REPLICA;
   ${SQL_QUERY}
   ${change_log_query}
-  START REPLICA;" 2> >(tee log/error.log >&2)
+  START REPLICA;" 2> >(tee -a log/error.log >&2)
 
 if [ $? -ne 0 ]; then
     echo "$0: [Error] Failed to start replication. Check error.log for details."

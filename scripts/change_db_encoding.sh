@@ -25,7 +25,7 @@ echo "SET FOREIGN_KEY_CHECKS=0;
         COLLATE = utf8mb4_unicode_ci;
         $query
         SET FOREIGN_KEY_CHECKS=1;" \
-| mysql -u root -p${MASTER_USER_PASSWORD} --port ${MASTER_PORT} ${database_name} 2> >(tee log/error.log >&2)
+| mysql -u root -p${MASTER_USER_PASSWORD} --port ${MASTER_PORT} ${database_name} 2> >(tee -a log/error.log >&2)
 
 if [ $? -ne 0 ]; then
     echo "$0: [Error] Failed to change character set for database: $database_name. Check error.log for details."
