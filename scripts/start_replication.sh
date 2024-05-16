@@ -1,9 +1,11 @@
 #!/bin/bash
+set -o pipefail
 ENV_FILE_PATH=../.env
 export $(grep -v '^#' $ENV_FILE_PATH | xargs)
 
+echo "-- [RUN] Starting replication..."
 if [ $# -eq 0 ]; then
-    echo "[Error] Usage: $0 <change_log_query>"
+    echo "$0: [Error] Usage: $0 <change_log_query>"
     exit 1
 fi
 
@@ -18,10 +20,10 @@ mysql -u root -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} -e \
   RESET REPLICA;
   ${SQL_QUERY}
   ${change_log_query}
-  START REPLICA;" 2> log/error.log
+  START REPLICA;" 2> >(tee log/error.log >&2)
 
 if [ $? -ne 0 ]; then
-    echo "[Error] Failed to start replication. Check error.log for details."
+    echo "$0: [Error] Failed to start replication. Check error.log for details."
     exit 1
 fi
 
@@ -31,7 +33,7 @@ last_io_error=$(echo "$replica_status_output" | grep "Last_IO_Error:" | awk -F':
 last_sql_error=$(echo "$replica_status_output" | grep "Last_SQL_Error:" | awk -F': ' '{print $2}')
 
 if [ -n "$last_io_error" ] || [ -n "$last_sql_error" ]; then
-    echo "[Error] Replication errors found:" | tee -a log/error.log
+    echo "$0: [Error] Replication errors found:" | tee -a log/error.log
     if [ -n "$last_io_error" ]; then
         echo "Last_IO_Error: $last_io_error" | tee -a log/error.log
     fi
@@ -41,4 +43,5 @@ if [ -n "$last_io_error" ] || [ -n "$last_sql_error" ]; then
     exit 1
 fi
 
-echo "[Success] Replication started successfully"
+echo "-- [Success] Replication started successfully"
+echo ""
