@@ -9,7 +9,6 @@ if [ $# -eq 0 ]; then
 fi
 
 database_name=$1
-echo "-- [RUN] Starting mysqldump for database: $database_name..."
 
 mysqldump --databases "${database_name}" --add-drop-database \
   --single-transaction --column-statistics=0 --source-data=2 \
@@ -20,6 +19,3 @@ if [ $? -ne 0 ]; then
     echo "$0: [Error] mysqldump failed. Check error.log for details."
     exit 1
 fi
-
-echo "-- [Success] Dump completed successfully to file: dumps/${database_name}_dump.sql.gz"
-echo ""

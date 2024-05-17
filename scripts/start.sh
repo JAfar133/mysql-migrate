@@ -21,27 +21,35 @@ for db in "${database_array[@]}"; do
     fi
     echo " == $db == "
 
+    echo "-- [RUN] Starting to change character set..."
     ./change_db_encoding.sh $db
     if [ $? -ne 0 ]; then
         error_databases+=("$db")
         continue
     fi
+    echo "-- [Success] Character set changed successfully"
+    echo ""
 
+    echo "-- [RUN] Starting mysqldump for database..."
     ./db_dump.sh $db
     if [ $? -ne 0 ]; then
         error_databases+=("$db")
         continue
     fi
+    echo "-- [Success] Dump completed successfully to file: dumps/${db}_dump.sql.gz"
+    echo ""
 
-    echo "-- [RUN] Restoring database on slave..."
-    pv dumps/${db}_dump.sql.gz | gunzip -c | mysql -u root -h ${MASTER_HOST} -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} 2> >(tee -a log/error.log >&2)
+    echo "-- [RUN] Importing database to slave..."
+    pv dumps/${db}_dump.sql.gz | gunzip -c | mysql -u root -h ${REPLICA_HOST} -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} 2> >(tee -a log/error.log >&2)
     if [ $? -ne 0 ]; then
-        echo "$0: [Error] Error restoring database on slave for database: $db. Check error.log for details."
+        echo "$0: [Error] Error importing database on slave for database: $db. Check error.log for details."
         error_databases+=("$db")
         continue
     fi
-    echo "-- [SUCCESS] Restoring database on slave was successful..."
+    echo "-- [SUCCESS] Import database to slave was successful..."
+    echo ""
 
+    echo "-- [RUN] Starting replication..."
     change_log_query=$(gunzip -c dumps/${db}_dump.sql.gz | grep 'CHANGE MASTER TO' | awk -F"-- " '{print $2}')
 
     ./start_replication.sh "$change_log_query"
@@ -49,6 +57,8 @@ for db in "${database_array[@]}"; do
         error_databases+=("$db")
         continue
     fi
+    echo "-- [Success] Replication started successfully"
+    echo ""
 
 done
 

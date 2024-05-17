@@ -8,7 +8,6 @@ if [ $# -eq 0 ]; then
 fi
 
 database_name=$1
-echo "-- [RUN] Starting to change character set for database: $database_name --"
 
 query=$(mysql -u root -h ${MASTER_HOST} -p${MASTER_USER_PASSWORD} --port ${MASTER_PORT} -se \
   "SELECT CONCAT('ALTER TABLE \`${database_name}\`.', TABLE_NAME, ' CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, LOCK=SHARED;')
@@ -31,6 +30,3 @@ if [ $? -ne 0 ]; then
     echo "$0: [Error] Failed to change character set for database: $database_name. Check error.log for details."
     exit 1
 fi
-
-echo "-- [Success] Character set changed successfully for database: $database_name"
-echo ""
