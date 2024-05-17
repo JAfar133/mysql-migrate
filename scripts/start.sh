@@ -34,7 +34,7 @@ for db in "${database_array[@]}"; do
     fi
 
     echo "-- [RUN] Restoring database on slave..."
-    gunzip -c dumps/${db}_dump.sql.gz | pv | mysql -u root -h ${MASTER_HOST} -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} 2> >(tee -a log/error.log >&2)
+    pv dumps/${db}_dump.sql.gz | gunzip -c | mysql -u root -h ${MASTER_HOST} -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} 2> >(tee -a log/error.log >&2)
     if [ $? -ne 0 ]; then
         echo "$0: [Error] Error restoring database on slave for database: $db. Check error.log for details."
         error_databases+=("$db")
