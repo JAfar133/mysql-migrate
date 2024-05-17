@@ -15,7 +15,7 @@ SQL_QUERY="CHANGE REPLICATION SOURCE TO
            SOURCE_USER='${MASTER_USER_NAME}',
            SOURCE_PASSWORD='${MASTER_USER_PASSWORD}';"
 
-mysql -u root -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} -e \
+mysql -u root -h ${MASTER_HOST} -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} -e \
   "STOP REPLICA;
   RESET REPLICA;
   ${SQL_QUERY}
@@ -27,7 +27,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-replica_status_output=$(mysql -u root -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} -e "SHOW REPLICA STATUS\G")
+replica_status_output=$(mysql -u root -h ${MASTER_HOST} -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} -e "SHOW REPLICA STATUS\G")
 
 last_io_error=$(echo "$replica_status_output" | grep "Last_IO_Error:" | awk -F': ' '{print $2}')
 last_sql_error=$(echo "$replica_status_output" | grep "Last_SQL_Error:" | awk -F': ' '{print $2}')

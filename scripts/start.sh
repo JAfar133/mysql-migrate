@@ -5,7 +5,7 @@ echo "Loading env variables from $ENV_FILE_PATH"
 export $(grep -v '^#' $ENV_FILE_PATH | xargs)
 
 if [ "$DATABASES" == "ALL" ]; then
-    DATABASES=$(mysql -u root --password=${MASTER_USER_PASSWORD} --port ${MASTER_PORT} -se "SHOW DATABASES;" | grep -Ev "(Database|information_schema|performance_schema|mysql|sys)" | tr '\n' ',')
+    DATABASES=$(mysql -u root -h ${MASTER_HOST} --password=${MASTER_USER_PASSWORD} --port ${MASTER_PORT} -se "SHOW DATABASES;" | grep -Ev "(Database|information_schema|performance_schema|mysql|sys)" | tr '\n' ',')
 fi
 
 IFS=',' read -ra database_array <<< "$DATABASES"
@@ -34,7 +34,7 @@ for db in "${database_array[@]}"; do
     fi
 
     echo "-- [RUN] Restoring database on slave..."
-    gunzip -c dumps/${db}_dump.sql.gz | pv | mysql -u root -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} 2> >(tee -a log/error.log >&2)
+    gunzip -c dumps/${db}_dump.sql.gz | pv | mysql -u root -h ${MASTER_HOST} -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} 2> >(tee -a log/error.log >&2)
     if [ $? -ne 0 ]; then
         echo "$0: [Error] Error restoring database on slave for database: $db. Check error.log for details."
         error_databases+=("$db")
