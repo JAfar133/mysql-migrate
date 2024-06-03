@@ -8,6 +8,7 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+DATABASES=$(mysql -u root -h ${REPLICA_HOST} --password=${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} -se "SHOW DATABASES;" | grep -Ev "(Database|information_schema|performance_schema|mysql|sys)" | tr '\n' ',' | sed 's/,$//')
 change_log_query=$1
 SQL_QUERY="CHANGE REPLICATION SOURCE TO
            SOURCE_HOST='${MASTER_HOST}',
@@ -17,6 +18,7 @@ SQL_QUERY="CHANGE REPLICATION SOURCE TO
 mysql -u root -h ${REPLICA_HOST} -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} -e \
   "STOP REPLICA;
   RESET REPLICA;
+  CHANGE REPLICATION FILTER REPLICATE_DO_DB=(${DATABASES});
   ${SQL_QUERY}
   ${change_log_query}
   START REPLICA;" 2> >(tee -a log/error.log >&2)
