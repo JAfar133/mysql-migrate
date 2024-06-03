@@ -30,8 +30,8 @@ fi
 
 replica_status_output=$(mysql -u root -h ${REPLICA_HOST} -p${REPLICA_USER_PASSWORD} --port ${REPLICA_PORT} -e "SHOW REPLICA STATUS\G")
 
-last_io_error=$(echo "$replica_status_output" | grep "Last_IO_Error:" | awk -F': ' '{print $2}')
-last_sql_error=$(echo "$replica_status_output" | grep "Last_SQL_Error:" | awk -F': ' '{print $2}')
+last_io_error=$(echo "$replica_status_output" | grep "Last_IO_Error:" | awk -F'Last_IO_Error: ' '{print $2}')
+last_sql_error=$(echo "$replica_status_output" | grep "Last_SQL_Error:" | awk -F'Last_SQL_Error: ' '{print $2}')
 
 if [ -n "$last_io_error" ] || [ -n "$last_sql_error" ]; then
     echo "$0: [Error] Replication errors found:" | tee -a log/error.log

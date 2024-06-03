@@ -10,7 +10,7 @@ fi
 
 database_name=$1
 
-mysqldump --databases "${database_name}" --add-drop-database \
+mysqldump --databases "${database_name}" --routines --add-drop-database \
   --single-transaction --column-statistics=0 --source-data=2 \
   -u root -h ${MASTER_HOST} -p"${MASTER_USER_PASSWORD}" --port "${MASTER_PORT}" 2> >(tee -a log/error.log >&2) \
  | pv | gzip > "dumps/${database_name}_dump.sql.gz" 2> >(tee -a log/error.log >&2)
