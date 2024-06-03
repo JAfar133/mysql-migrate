@@ -23,7 +23,9 @@ Possible errors when change database encoding:
 ```
 2. `sudo systemctl stop docker`
 3. `sudo rsync -aP /var/lib/docker/ "/path/to/your/new/docker/root"`
-4. `sudo service docker start`
+4. `sudo systemctl start docker`
+5. Ensure root dir is correct `sudo docker info | grep "Docker Root Dir"`
+6. Clean old root dir
 
 ## Конфигурация MySQL (Master)
 - Ensure binary logging is enabled. There should not be the option `[mysqld]  skip-log-bin`
