@@ -27,7 +27,7 @@ Possible errors when change database encoding:
 5. Ensure root dir is correct `sudo docker info | grep "Docker Root Dir"`
 6. Clean old root dir
 
-## Конфигурация MySQL (Master)
+## Configuration MySQL (Master)
 - Ensure binary logging is enabled. There should not be the option `[mysqld]  skip-log-bin`
 - Add the following to the `[mysqld]` section:
 ```
